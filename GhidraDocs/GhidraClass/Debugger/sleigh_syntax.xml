@@ -11,28 +11,76 @@
           extensions="*.sla;*.sinc"
           priority="5">
   <highlighting>
-    <list name="controlflow">
-      <item>goto</item>
+
+    <!-- 3. Preprocessing -->
+    <list name="preprocessor">
+      <item>include</item>
+      <item>define</item>
+      <item>undef</item>
+      <item>ifdef</item>
+      <item>ifndef</item>
       <item>if</item>
-      <item>return</item>
+      <item>else</item>
+      <item>elif</item>
+      <item>endif</item>
     </list>
 
+    <!-- Keywords -->
     <list name="keywords">
-      <item>scarry</item>
+      <item>define</item>
+      <item>attach</item>
+      <item>with</item>
+      <item>macro</item>
+    </list>
+
+    <!-- 4. Basic Definitions -->
+    <list name="standarddefines">
+      <item>space</item>
+      <item>pcodeop</item>
+    </list>
+
+    <!-- 9. P-code Tables, Tables 5 and 6 -->
+    <list name="builtinfuncs">
+      <item>popcount</item>
+      <item>lzcount</item>
+      <item>zext</item>
+      <item>sext</item>
       <item>carry</item>
+      <item>scarry</item>
       <item>sborrow</item>
+      <item>nan</item>
+      <item>abs</item>
+      <item>sqrt</item>
+      <item>int2float</item>
+      <item>float2float</item>
+      <item>trunc</item>
+      <item>ceil</item>
+      <item>floor</item>
+      <item>round</item>
+      <item>cpool</item>
+      <item>newobject</item>
+      <item>delayslot</item>
+    </list>
+
+    <!-- 9. P-code Tables, Table 7. Branching Statements -->
+    <list name="branching">
+      <item>goto</item>
+      <item>if</item>
+      <item>call</item>
+      <item>return</item>
     </list>
 
     <contexts>
       <context attribute="Normal Text" lineEndContext="#stay" name="Normal">
-        <DetectSpaces />
+        <DetectSpaces attribute="Normal Text"/>
+        <DetectChar char="#" attribute="Comment" context="Hash comment"/>
+        <DetectChar char="@" attribute="Preprocessor" context="Preprocessor" firstNonSpace="1"/>
+
         <!-- Match symbols (partial for fast path) -->
         <AnyChar attribute="Symbol" context="#stay" String=":()]+-*=&gt;!|&amp;~^,;" />
 
         <IncludeRules context="match keywords" />
         <DetectIdentifier />
-
-        <DetectChar attribute="Symbol" context="Attribute" char="&lt;" />
 
         <!-- Match numbers -->
         <RegExpr context="Number" String="\.?[0-9]" lookAhead="1" />
@@ -40,8 +88,12 @@
         <AnyChar attribute="Symbol" context="#stay" String="&symbols;"/>
       </context>
 
+      <context name="Preprocessor" attribute="Preprocessor" lineEndContext="#pop">
+        <LineContinue attribute="Symbol"/>
+      </context>
+
       <context name="match keywords" attribute="Normal Text" lineEndContext="#pop">
-        <keyword attribute="Control Flow" context="#stay" String="controlflow"/>
+        <keyword attribute="Control Flow" context="#stay" String="branching"/>
         <keyword attribute="Keyword" context="#stay" String="keywords"/>
       </context>
 
@@ -61,24 +113,40 @@
         <RegExpr attribute="Error" context="#pop" String="[._0-9A-Za-z']++" />
       </context>
       <context name="IntStartsWith0" attribute="Normal Text" lineEndContext="#pop">
+        <RegExpr attribute="Binary" context="#pop" String="0b[01]++" />
         <RegExpr attribute="Hex" context="#pop" String="0[xX]&hex_int;" />
         <RegExpr attribute="Octal" context="#pop" String="0(?:'?[0-7]++)++" />
         <DetectChar attribute="Decimal" context="#pop" char="0"/>
       </context>
 
+      <context name="Hash comment" attribute="Comment" lineEndContext="#pop">
+        <DetectSpaces/>
+        <IncludeRules context="##Comments"/>
+        <DetectIdentifier/>
+      </context>
+
     </contexts>
     <itemDatas>
-      <itemData name="Normal Text"  defStyleNum="dsNormal" spellChecking="false"/>
-      <itemData name="Control Flow" defStyleNum="dsControlFlow" spellChecking="false"/>
-      <itemData name="Keyword"      defStyleNum="dsKeyword" spellChecking="false"/>
-      <itemData name="Attribute"    defStyleNum="dsAttribute" spellChecking="false"/>
-      <itemData name="Decimal"      defStyleNum="dsDecVal" spellChecking="false"/>
-      <itemData name="Octal"        defStyleNum="dsBaseN" spellChecking="false"/>
-      <itemData name="Hex"          defStyleNum="dsBaseN" spellChecking="false"/>
-      <itemData name="Error"        defStyleNum="dsError" spellChecking="false"/>
+      <itemData name="Normal Text"        defStyleNum="dsNormal" spellChecking="false"/>
+      <itemData name="Operator"           defStyleNum="dsOperator" spellChecking="false"/>
+      <itemData name="Control Flow"       defStyleNum="dsControlFlow" spellChecking="false"/>
+      <itemData name="Keyword"            defStyleNum="dsKeyword" spellChecking="false"/>
+      <itemData name="Attribute"          defStyleNum="dsAttribute" spellChecking="false"/>
+      <itemData name="Standard Attribute" defStyleNum="dsAttribute" spellChecking="false"/>
+      <itemData name="Decimal"            defStyleNum="dsDecVal" spellChecking="false"/>
+      <itemData name="Octal"              defStyleNum="dsBaseN" spellChecking="false"/>
+      <itemData name="Hex"                defStyleNum="dsBaseN" spellChecking="false"/>
+      <itemData name="Binary"             defStyleNum="dsBaseN" spellChecking="false"/>
+      <itemData name="Comment"            defStyleNum="dsComment"/>
+      <itemData name="Symbol"             defStyleNum="dsOperator" spellChecking="false"/>
+      <itemData name="Preprocessor"       defStyleNum="dsPreprocessor" spellChecking="false"/>
+      <itemData name="Error"              defStyleNum="dsError" spellChecking="false"/>
     </itemDatas>
   </highlighting>
   <general>
+    <comments>
+      <comment name="singleLine" start="#" position="afterwhitespace"/>
+    </comments>
     <keywords casesensitive="1" additionalDeliminator="#'&quot;" />
   </general>
 </language>
